@@ -139,7 +139,8 @@ public class SpriteSmearFramesRenderer : MonoBehaviour
         rp.matProps = new MaterialPropertyBlock();
         rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.TRS(localPos, Quaternion.identity, scale));
         rp.matProps.SetFloat("_Intensity", Mathf.Clamp(direction.x, -0.24F, 0.24F));
-            
+        rp.matProps.SetVector("_Flip", new Vector2(spriteRenderer.flipX ? -1.0F : 1.0F, spriteRenderer.flipY ? -1.0F : 1.0F));
+        
         commandData[0].indexCountPerInstance = internalMesh.GetIndexCount(0);
         commandData[0].instanceCount = 1;
         commandBuffer.SetData(commandData);

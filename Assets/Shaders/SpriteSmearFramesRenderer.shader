@@ -90,7 +90,12 @@ Shader "Sprites/SpriteSmearFramesRenderer"
             {
                 return float4(pos.xy * flip, pos.z, 1.0);
             }
-            
+
+            inline float2 UnityFlipSpriteUV(in float2 uv, in fixed2 flip)
+			{
+                return step(flip, 0) + sign(flip) * uv;
+            }
+    
             v2f SpriteVert(appdata_t IN,  uint svInstanceID : SV_InstanceID)                        
             {
                 InitIndirectDrawArgs(0);
@@ -105,11 +110,10 @@ Shader "Sprites/SpriteSmearFramesRenderer"
                 float4 wpos = mul(_ObjectToWorld, IN.vertex + float4(instanceID, cmdID, 0, 0));
                 OUT.vertex = mul(UNITY_MATRIX_VP, wpos);
 
-                // OUT.vertex = UnityFlipSprite(IN.vertex, _Flip);                
+                // OUT.vertex = UnityFlipSprite(IN.vertex, _Flip);
                 // OUT.vertex = UnityObjectToClipPos(OUT.vertex);
                 OUT.vertexOS = IN.vertex;
-                OUT.texcoord = IN.texcoord;
-
+                OUT.texcoord = UnityFlipSpriteUV(IN.texcoord, _Flip);
                 OUT.color = IN.color * _Color * _RendererColor;
 
                 #ifdef PIXELSNAP_ON
@@ -134,31 +138,32 @@ Shader "Sprites/SpriteSmearFramesRenderer"
                 return color;
             }
 
-            float rand(float2 seed)
+            inline float rand(float2 seed)
             {
                 return frac(sin(dot(seed, float2(12.9898, 78.233))) * 43758.5453);
             }
 
             fixed4 SpriteFrag(v2f IN) : SV_Target
-            {                
-                float dx = -sign(_Intensity.x) * abs(_Intensity.x); // clamp(0, 0.6, abs(_Direction.x));
+            {              
+                float dragDir = sign(_Intensity.x);
+                float dragForce = -dragDir * abs(_Intensity.x);
                 
                 // range [-0.5, 0.5] ~ [-0.7, 0.7]
-                float ddx = (IN.vertexOS.x + 0.5 + 0.2 * sign(_Intensity.x));
-                if (dx > 0) { ddx = 1.0 - ddx; }
+                float ddx = (IN.vertexOS.x + 0.5 + 0.2 * dragDir);
+                if (dragForce > 0) { ddx = 1.0 - ddx; }
                 
-                fixed2 offset = fixed2(dx * frac(rand(fixed2(0, IN.texcoord.y)) + 0.15), 0);
+                fixed2 uvOffset = -dragDir * fixed2(dragForce * frac(rand(fixed2(0, IN.texcoord.y)) + 0.15), 0);
 
                 // if (ddx < 0.5)
-                //     offset = fixed2(0,0);
+                //     uvOffset = fixed2(0,0);
                 // else
-                //     offset *= 2.0 * (ddx - 0.5);
-                offset *= step(0.5, ddx) * 2.0 * (ddx - 0.5);                
+                //     uvOffset *= 2.0 * (ddx - 0.5);
+                uvOffset *= step(0.5, ddx) * 2.0 * (ddx - 0.5);
 
-                fixed4 c = SampleSpriteTexture (IN.texcoord + offset) * IN.color;
+                fixed4 c = SampleSpriteTexture (IN.texcoord + uvOffset) * IN.color;
                 c.rgb *= c.a;                
                 return c;                
-                // return fixed4(abs(offset), 0, 1);
+                // return fixed4(IN.texcoord, 0, 1);
             }
             ENDCG
         }
