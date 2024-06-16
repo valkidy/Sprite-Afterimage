@@ -27,6 +27,12 @@ namespace Platformer.Mechanics
             
             /// A global maximum jump count            
             public int jumpMaxAmount = 2;
+
+            /// A global velocity modifier applied to all initial dash velocities.
+            public float dashModifier = 2f;
+
+            /// A global dynamic friction apllied on the external force.
+            public float dynamicFriction = 0.995f;
         }
 
 
@@ -39,6 +45,16 @@ namespace Platformer.Mechanics
         /// Initial jump velocity at the start of a jump.
         /// </summary>
         public float jumpTakeOffSpeed = 7;
+
+        /// <summary>
+        /// Initial external force applied on at the start of a dash.
+        /// </summary>
+        public float applyForce = 0;
+
+        /// <summary>
+        /// Friction apply on the force.
+        /// </summary>
+        public float friction = 0.95f;
 
         public JumpState jumpState = JumpState.Grounded;
         private bool stopJump;
@@ -61,6 +77,8 @@ namespace Platformer.Mechanics
             collider2d = GetComponent<Collider2D>();
             spriteRenderer = GetComponent<SpriteRenderer>();
             animator = GetComponent<Animator>();
+
+            friction = model.dynamicFriction;
         }
 
         protected override void Update()
@@ -69,6 +87,11 @@ namespace Platformer.Mechanics
             {
                 move.x = Input.GetAxis("Horizontal");
                 
+                if (Input.GetKeyDown(KeyCode.Z))
+                {
+                    applyForce = model.dashModifier;
+                }
+                                            
                 if (Input.GetButtonDown("Jump"))
                 {
                     if (jumpState == JumpState.Grounded)
@@ -90,6 +113,13 @@ namespace Platformer.Mechanics
             {
                 move.x = 0;
             }
+
+            var renderer = GetComponent<SpriteSmearFramesRenderer>();
+            if (renderer) 
+            { 
+                renderer.enable = applyForce > 0f;
+            }
+
             UpdateJumpState();
             base.Update();
         }
@@ -149,10 +179,19 @@ namespace Platformer.Mechanics
             else if (move.x < -0.01f)
                 spriteRenderer.flipX = true;
 
-            animator.SetBool("isGrounded", IsGrounded);                       
-            animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
+            if (spriteRenderer.flipX)
+                move.x -= applyForce;
+            else
+                move.x += applyForce;
 
-            targetVelocity = move * maxSpeed;
+            applyForce *= friction;
+            if (applyForce < 1F)
+                applyForce = 0F;
+            
+            animator.SetFloat("velocityX", Mathf.Abs(velocity.x) / maxSpeed);
+            animator.SetFloat("forceX", applyForce);
+
+            targetVelocity = move * maxSpeed;            
         }
 
         public enum JumpState

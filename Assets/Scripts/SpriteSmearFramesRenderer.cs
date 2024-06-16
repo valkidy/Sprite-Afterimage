@@ -24,6 +24,11 @@ public class SpriteSmearFramesRenderer : MonoBehaviour
     private Vector3 direction;
     private float t = 0;
 
+    [Range(0.01f, 16f)] public float timeSlice = 2f;
+    [Range(0.01f, 0.4f)] public float intensityRange = 0.26f;
+    
+    public bool enable = true;
+
     Mesh CreateInternalQuadMesh(float width = 1F, float height = 1F)
     {
         Mesh mesh = new Mesh();
@@ -69,7 +74,8 @@ public class SpriteSmearFramesRenderer : MonoBehaviour
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-        
+        spriteRenderer.enabled = false;
+
         sprite = spriteRenderer.sprite;
 
         // Set up the render texture
@@ -98,20 +104,35 @@ public class SpriteSmearFramesRenderer : MonoBehaviour
 
     void FixedUpdate()
     {
+        newPosition = transform.position;
 
+        if ((newPosition - lastPosition).sqrMagnitude < 1e-1) 
+        { 
+            t = 0;
+
+            direction = Vector3.zero;
+        }
+        else
+        {
+            t += Time.deltaTime;
+
+            lastPosition = Vector3.Lerp(lastPosition, newPosition, t / timeSlice);
+
+            direction = lastPosition - newPosition;
+        }
+
+        if (enable)
+        {
+            direction.x = Mathf.Clamp(direction.x, -intensityRange, intensityRange);
+        }
+        else
+        {
+            direction.x = 0f;
+        }
     }
 
     void Update()
     {
-        newPosition = transform.position;
-
-        if (newPosition == lastPosition) t = 0;
-        t += Time.deltaTime;
-
-        lastPosition = Vector3.Lerp(lastPosition, newPosition, t / 128);
-
-        var direction = lastPosition - newPosition;
-
         sprite = spriteRenderer.sprite;
        
         // Set the active render texture
@@ -126,19 +147,19 @@ public class SpriteSmearFramesRenderer : MonoBehaviour
         // Reset the active render texture
         RenderTexture.active = null;
 
-        // 
+        // Calculate TRS of the sprite clone
         var bounds = sprite.bounds;
         var localPos = new Vector3(transform.position.x + bounds.center.x, 
                 transform.position.y + bounds.center.y, 0);
         var scale = new Vector3(2F * transform.localScale.x * bounds.extents.x, 
-                2F * transform.localScale.y * bounds.extents.y, 1F);
-
+                2F * transform.localScale.y * bounds.extents.y, 1F);        
+            
         // Setup RenderParams
         RenderParams rp = new RenderParams(internalMat);
         rp.worldBounds = new Bounds(Vector3.zero, 10000 * Vector3.one); // use tighter bounds for better FOV culling
         rp.matProps = new MaterialPropertyBlock();
         rp.matProps.SetMatrix("_ObjectToWorld", Matrix4x4.TRS(localPos, Quaternion.identity, scale));
-        rp.matProps.SetFloat("_Intensity", Mathf.Clamp(direction.x, -0.24F, 0.24F));
+        rp.matProps.SetFloat("_Intensity", direction.x);
         rp.matProps.SetVector("_Flip", new Vector2(spriteRenderer.flipX ? -1.0F : 1.0F, spriteRenderer.flipY ? -1.0F : 1.0F));
         
         commandData[0].indexCountPerInstance = internalMesh.GetIndexCount(0);

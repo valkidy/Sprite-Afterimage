@@ -242,6 +242,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0d7edde930dd4744bc44018c2068298, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timeSlice: 32
+  intensityRange: 0.26
+  enable: 1
 --- !u!1 &1152351266
 GameObject:
   m_ObjectHideFlags: 0
@@ -385,6 +388,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0d7edde930dd4744bc44018c2068298, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timeSlice: 32
+  intensityRange: 0.26
+  enable: 1
 --- !u!1 &1288360222
 GameObject:
   m_ObjectHideFlags: 0
@@ -461,6 +467,8 @@ MonoBehaviour:
   velocity: {x: 0, y: 0}
   maxSpeed: 7
   jumpTakeOffSpeed: 7
+  applyForce: 0
+  friction: 0.995
   jumpState: 0
   collider2d: {fileID: 0}
   controlEnabled: 1
@@ -600,6 +608,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0d7edde930dd4744bc44018c2068298, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  timeSlice: 0.3
+  intensityRange: 0.18
+  enable: 1
 --- !u!1 &1421740576
 GameObject:
   m_ObjectHideFlags: 0
@@ -780,7 +791,7 @@ Transform:
   m_GameObject: {fileID: 1841546421}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 1, z: -5}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
