@@ -114,11 +114,11 @@ namespace Platformer.Mechanics
                 move.x = 0;
             }
 
-            var renderer = GetComponent<SpriteSmearFramesRenderer>();
-            if (renderer) 
-            { 
-                renderer.enable = applyForce > 0f;
-            }
+            var component = GetComponentInChildren<SpriteSmearFramesComponent>();
+            if (component)
+            {
+                component.Enable = applyForce > 0f;
+            }                       
 
             UpdateJumpState();
             base.Update();
