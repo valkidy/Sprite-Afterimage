@@ -66,9 +66,7 @@ public class SpriteSmearFramesComponent : MonoBehaviour
         mesh.uv = uv;
         return mesh;
     }
-
-    
-
+   
     void Start()
     {
         // disable source sprite.
