@@ -12,7 +12,7 @@ public class SpriteAfterimageComponent : MonoBehaviour
     private Material afterimageMaterial;
     private Material imageCropMaterial;
     private MaterialPropertyBlock matProps;
-    public RenderTexture renderTexture;
+    private RenderTexture renderTexture;
     
     const int SpriteAfterimageInstanceCount = 16;
     private int slice = (int)Mathf.Sqrt(SpriteAfterimageInstanceCount);
@@ -138,7 +138,7 @@ public class SpriteAfterimageComponent : MonoBehaviour
     void UpdateInternalProp()
     {        
         matProps.SetMatrixArray("_ObjectToWorld", worldMatrices);
-        matProps.SetFloat("_FrameIndex", frameIndex);
+        matProps.SetFloat("_TotalFrameCount", SpriteAfterimageInstanceCount);
         afterimageRenderer.SetPropertyBlock(matProps);
     }
     
